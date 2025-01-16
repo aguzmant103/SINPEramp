@@ -92,26 +92,37 @@ export function TokenSwapForm() {
           )}
 
           {/* DaimoPayButton */}
-          <DaimoPayButton
-            appId="pay-demo"
-            toChain={10}
-            toUnits={sendAmount}
-            toToken="0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
-            toAddress="0xf446845fAB5367178a1C9e2ffd8D3b7EE678BAfe"
-            disabled={!sendAmount || isLoading || isDaimoLoading}
-            onPaymentStarted={() => {
-              if (!isDaimoLoading) {
-                console.log('Payment started')
-                setIsDaimoLoading(true)
-              }
-            }}
-            onPaymentCompleted={() => {
-              if (!isDaimoLoading) {
-                console.log('Payment completed')
-                setIsDaimoLoading(false)
-              }
-            }}
-          />
+          <div className="bg-[#2C2C2C] rounded-2xl p-4 border border-gray-800">
+            <DaimoPayButton.Custom
+              appId="pay-demo"
+              toChain={10}
+              toUnits={sendAmount}
+              toToken="0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
+              toAddress="0xf446845fAB5367178a1C9e2ffd8D3b7EE678BAfe"
+              onPaymentStarted={() => {
+                if (!isDaimoLoading) {
+                  console.log('Payment started')
+                  setIsDaimoLoading(true)
+                }
+              }}
+              onPaymentCompleted={() => {
+                if (!isDaimoLoading) {
+                  console.log('Payment completed')
+                  setIsDaimoLoading(false)
+                }
+              }}
+            >
+              {({ show }) => (
+                <button
+                  onClick={show}
+                  disabled={!sendAmount || isLoading || isDaimoLoading}
+                  className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:hover:bg-blue-500 text-white font-medium py-3 rounded-xl transition-colors"
+                >
+                  Pay
+                </button>
+              )}
+            </DaimoPayButton.Custom>
+          </div>
         </div>
       </div>
     </div>
