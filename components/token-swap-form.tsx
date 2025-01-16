@@ -5,12 +5,34 @@ import { useCurrencyConversion } from '@/hooks/useCurrencyConversion'
 import { useDebounce } from '@/hooks/useDebounce'
 import { DollarSign, ArrowDown } from 'lucide-react'
 import { DaimoPayButton } from '@daimo/pay'
+import { PaymentStartedEvent } from '@daimo/common'
+import confetti from 'canvas-confetti'
 
 export function TokenSwapForm() {
   const [sendAmount, setSendAmount] = useState<string>('')
   const [isDaimoLoading, setIsDaimoLoading] = useState<boolean>(false)
+  const [payId, setPayId] = useState<string>()
+  const [txHash, setTxHash] = useState<string>()
   const debouncedSendAmount = useDebounce(sendAmount, 500)
   const { crcAmount: convertedAmount, isLoading, error } = useCurrencyConversion(debouncedSendAmount)
+
+  const triggerConfetti = () => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    })
+  }
+
+  // Temporary test button component
+  const TestConfettiButton = () => (
+    <button
+      onClick={triggerConfetti}
+      className="fixed bottom-4 right-4 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl"
+    >
+     🎉
+    </button>
+  )
 
   const formatCurrency = (amount: string, currency: 'USD' | 'CRC') => {
     const num = parseFloat(amount)
@@ -25,13 +47,14 @@ export function TokenSwapForm() {
 
   return (
     <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4">
+      <TestConfettiButton />
       <div className="w-full max-w-md space-y-4">
         <div className="space-y-3">
           {/* Send Token Card (USD) */}
           <div className="bg-[#2C2C2C] rounded-2xl p-4 border border-gray-800">
             <div className="flex justify-between items-center mb-2">
               <label htmlFor="sendAmount" className="text-gray-400 text-sm">
-                You send
+                Envías
               </label>
               <div className="flex items-center gap-2 bg-[#3C3C3C] px-3 py-1.5 rounded-xl">
                 <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
@@ -66,7 +89,7 @@ export function TokenSwapForm() {
           <div className="bg-[#2C2C2C] rounded-2xl p-4 border border-gray-800">
             <div className="flex justify-between items-center mb-2">
               <label className="text-gray-400 text-sm">
-                You receive
+                Recibes
               </label>
               <div className="flex items-center gap-2 bg-[#3C3C3C] px-3 py-1.5 rounded-xl">
                 <span className="text-white font-medium">CRC</span>
@@ -74,7 +97,7 @@ export function TokenSwapForm() {
             </div>
             <div className="text-4xl text-white font-medium">
               {isLoading ? 
-                'Calculating...' : 
+                'Calculando...' : 
                 convertedAmount ? 
                   Number(convertedAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 
                   '0.00'
@@ -87,7 +110,7 @@ export function TokenSwapForm() {
 
           {error && (
             <div className="text-red-500 text-sm px-4">
-              {error}
+              {error === 'Failed to fetch exchange rate' ? 'Error al obtener el tipo de cambio' : error}
             </div>
           )}
 
@@ -99,16 +122,21 @@ export function TokenSwapForm() {
               toUnits={sendAmount}
               toToken="0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
               toAddress="0xf446845fAB5367178a1C9e2ffd8D3b7EE678BAfe"
-              onPaymentStarted={() => {
+              intent="SINPE_RAMP_PAYMENT"
+              closeOnSuccess={true}
+              onPaymentStarted={(e: PaymentStartedEvent) => {
                 if (!isDaimoLoading) {
-                  console.log('Payment started')
+                  console.log('Pago iniciado', e.paymentId)
+                  setPayId(e.paymentId)
                   setIsDaimoLoading(true)
                 }
               }}
-              onPaymentCompleted={() => {
+              onPaymentCompleted={(e) => {
                 if (!isDaimoLoading) {
-                  console.log('Payment completed')
+                  console.log('Pago completado', e.txHash)
+                  setTxHash(e.txHash)
                   setIsDaimoLoading(false)
+                  setTimeout(triggerConfetti, 1000)
                 }
               }}
             >
@@ -118,10 +146,28 @@ export function TokenSwapForm() {
                   disabled={!sendAmount || isLoading || isDaimoLoading}
                   className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:hover:bg-blue-500 text-white font-medium py-3 rounded-xl transition-colors"
                 >
-                  Pay
+                  Swap
                 </button>
               )}
             </DaimoPayButton.Custom>
+            {payId && (
+              <div className="text-xs mt-2 text-center">
+                {txHash ? (
+                  <a
+                    href={`https://optimistic.etherscan.io/tx/${txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-gray-300 inline-flex items-center gap-1"
+                  >
+                    # Orden: 88888888-{payId} ↗
+                  </a>
+                ) : (
+                  <span className="text-gray-500">
+                    # Orden: 88888888-{payId}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
