@@ -13,6 +13,7 @@ export function TokenSwapForm() {
   const [isDaimoLoading, setIsDaimoLoading] = useState<boolean>(false)
   const [payId, setPayId] = useState<string>()
   const [txHash, setTxHash] = useState<string>()
+  const [phoneNumber, setPhoneNumber] = useState<string>('')
   const debouncedSendAmount = useDebounce(sendAmount, 500)
   const { crcAmount: convertedAmount, isLoading, error } = useCurrencyConversion(debouncedSendAmount)
 
@@ -46,9 +47,10 @@ export function TokenSwapForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#1C1C1C] flex flex-col items-center justify-center p-4">
       <TestConfettiButton />
-      <div className="w-full max-w-md space-y-4">
+      <div className="w-full max-w-md">
+        {/* Main Form Section */}
         <div className="space-y-3">
           {/* Send Token Card (USD) */}
           <div className="bg-[#2C2C2C] rounded-2xl p-4 border border-gray-800">
@@ -60,17 +62,22 @@ export function TokenSwapForm() {
                 <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
                   <DollarSign className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-white font-medium">USDC</span>
+                <span className="text-white font-medium">All</span>
               </div>
             </div>
             <input
               id="sendAmount"
-              type="number"
-              className="w-full bg-transparent text-4xl text-white placeholder-gray-600 outline-none"
+              type="text"
+              inputMode="numeric"
+              className="w-full bg-transparent text-4xl text-white placeholder-gray-600 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               placeholder="0"
               value={sendAmount}
-              onChange={(e) => setSendAmount(e.target.value)}
-              step="0.01"
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '');
+                if (value === '' || /^\d+$/.test(value)) {
+                  setSendAmount(value);
+                }
+              }}
               min="0"
             />
             <div className="text-gray-500 text-sm mt-1">
@@ -105,6 +112,40 @@ export function TokenSwapForm() {
             </div>
             <div className="text-gray-500 text-sm mt-1">
               {formatCurrency(convertedAmount || '0', 'CRC')}
+            </div>
+          </div>
+
+          {/* Phone Number Card */}
+          <div className="bg-[#2C2C2C] rounded-2xl p-4 border border-gray-800">
+            <div className="flex justify-between items-center mb-2">
+              <label htmlFor="phoneNumber" className="text-gray-400 text-sm">
+                Número SINPE Móvil
+              </label>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="bg-[#3C3C3C] px-3 py-2 rounded-xl text-gray-400 text-lg">
+                (+506)
+              </div>
+              <input
+                id="phoneNumber"
+                type="text"
+                inputMode="numeric"
+                pattern="\d*"
+                maxLength={9}
+                placeholder="0000-0000"
+                value={phoneNumber}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '');
+                  if (value.length <= 8) {
+                    if (value.length <= 4) {
+                      setPhoneNumber(value);
+                    } else {
+                      setPhoneNumber(`${value.slice(0, 4)}-${value.slice(4)}`);
+                    }
+                  }
+                }}
+                className="w-full bg-transparent text-2xl text-white placeholder-gray-600 outline-none"
+              />
             </div>
           </div>
 
@@ -143,10 +184,10 @@ export function TokenSwapForm() {
               {({ show }) => (
                 <button
                   onClick={show}
-                  disabled={!sendAmount || isLoading || isDaimoLoading}
+                  disabled={!sendAmount || isLoading || isDaimoLoading || !phoneNumber || phoneNumber.replace(/\D/g, '').length !== 8}
                   className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:hover:bg-blue-500 text-white font-medium py-3 rounded-xl transition-colors"
                 >
-                  Swap
+                  Enviar
                 </button>
               )}
             </DaimoPayButton.Custom>
@@ -169,6 +210,41 @@ export function TokenSwapForm() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Pending Tasks Section */}
+        <div className="mt-12 bg-[#2C2C2C] rounded-2xl p-6 border border-gray-800">
+          <h2 className="text-xl text-white font-medium mb-4">Pendientes</h2>
+          <ul className="space-y-2 text-gray-400">
+            <li className="flex items-start gap-2">
+              <span className="text-blue-500">•</span>
+              Poner límite de 100,000 diarios con barra visible
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-500">•</span>
+              Hacer explícito el tipo de cambio y fees
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-500">•</span>
+              Explicar que se puede pagar con cualquier crypto EVM/SVM
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-500">•</span>
+              Crear servidor de automatizar SMS y payments
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-500">•</span>
+              Validación más robusta de número SINPE
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-500">•</span>
+              Agregar el número SINPE al confirmation box
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-500">•</span>
+              Automatizar OTC en el backend
+            </li>
+          </ul>
         </div>
       </div>
     </div>
