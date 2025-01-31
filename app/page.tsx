@@ -13,7 +13,9 @@ export default function TokenSwapConverter() {
           La manera más fácil de convertir crypto a colones
         </p>
       </div>
-      <TokenSwapForm />
+      <div className="w-full max-w-2xl space-y-8">
+        <TokenSwapForm />
+      </div>
     </div>
   )
 }

@@ -15,7 +15,7 @@ export function TokenSwapForm() {
   const [txHash, setTxHash] = useState<string>()
   const [phoneNumber, setPhoneNumber] = useState<string>('')
   const debouncedSendAmount = useDebounce(sendAmount, 500)
-  const { crcAmount: convertedAmount, isLoading, error } = useCurrencyConversion(debouncedSendAmount)
+  const { crcAmount: convertedAmount, isLoading, error, exchangeRate } = useCurrencyConversion(debouncedSendAmount)
 
   const triggerConfetti = () => {
     confetti({
@@ -106,12 +106,23 @@ export function TokenSwapForm() {
               {isLoading ? 
                 'Calculando...' : 
                 convertedAmount ? 
-                  Number(convertedAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 
+                  Number(convertedAmount).toLocaleString('es-CR', { 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 2 
+                  }) : 
                   '0.00'
               }
             </div>
-            <div className="text-gray-500 text-sm mt-1">
-              {formatCurrency(convertedAmount || '0', 'CRC')}
+            <div className="flex justify-between text-sm mt-1">
+              <span className="text-gray-500">
+                {formatCurrency(convertedAmount || '0', 'CRC')}
+              </span>
+              <span className="text-gray-400">
+                1 USD = {exchangeRate?.toLocaleString('es-CR', { 
+                  minimumFractionDigits: 2, 
+                  maximumFractionDigits: 2 
+                })} CRC
+              </span>
             </div>
           </div>
 
