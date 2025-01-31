@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCurrencyConversion } from '@/hooks/useCurrencyConversion'
 import { useDebounce } from '@/hooks/useDebounce'
 import { DollarSign, ArrowDown } from 'lucide-react'
@@ -25,15 +25,12 @@ export function TokenSwapForm() {
     })
   }
 
-  // Temporary test button component
-  const TestConfettiButton = () => (
-    <button
-      onClick={triggerConfetti}
-      className="fixed bottom-4 right-4 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl"
-    >
-     🎉
-    </button>
-  )
+  // Move TestConfettiButton to a separate client component
+  const [showConfettiButton, setShowConfettiButton] = useState(false)
+
+  useEffect(() => {
+    setShowConfettiButton(true)
+  }, [])
 
   const formatCurrency = (amount: string, currency: 'USD' | 'CRC') => {
     const num = parseFloat(amount)
@@ -48,7 +45,14 @@ export function TokenSwapForm() {
 
   return (
     <div className="min-h-screen bg-[#1C1C1C] flex flex-col items-center justify-center p-4">
-      <TestConfettiButton />
+      {showConfettiButton && (
+        <button
+          onClick={triggerConfetti}
+          className="fixed bottom-4 right-4 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl"
+        >
+          🎉
+        </button>
+      )}
       <div className="w-full max-w-md">
         {/* Main Form Section */}
         <div className="space-y-3">
@@ -174,7 +178,7 @@ export function TokenSwapForm() {
               toUnits={sendAmount}
               toToken="0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
               toAddress="0xf446845fAB5367178a1C9e2ffd8D3b7EE678BAfe"
-              intent="SINPE_RAMP_PAYMENT"
+              intent={`SINPE_${phoneNumber.replace(/\D/g, '')}`}
               closeOnSuccess={true}
               onPaymentStarted={(e: PaymentStartedEvent) => {
                 if (!isDaimoLoading) {
