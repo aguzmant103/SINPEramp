@@ -227,37 +227,40 @@ export function TokenSwapForm() {
           </div>
         </div>
 
-        {/* Pending Tasks Section */}
+        {/* FAQ Section */}
         <div className="mt-12 bg-[#2C2C2C] rounded-2xl p-6 border border-gray-800">
-          <h2 className="text-xl text-white font-medium mb-4">Pendientes</h2>
-          <ul className="space-y-2 text-gray-400">
-            <li className="flex items-start gap-2">
-              <span className="text-blue-500">•</span>
-              Poner límite de 100,000 diarios con barra visible
+          <h2 className="text-xl text-white font-medium mb-4">Información Importante</h2>
+          <ul className="space-y-4 text-gray-400">
+            <li className="flex items-start gap-3">
+              <span className="text-blue-500 text-lg">•</span>
+              <div>
+                <p className="text-gray-300 font-medium mb-1">Tipo de Cambio</p>
+                <p className="text-sm leading-relaxed">
+                  Utilizamos el promedio entre compra y venta del Banco Central de Costa Rica (BCCR), 
+                  más una comisión de ₡10 por dólar para cubrir costos operativos.
+                </p>
+              </div>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-blue-500">•</span>
-              Hacer explícito el tipo de cambio y fees
+            <li className="flex items-start gap-3">
+              <span className="text-blue-500 text-lg">•</span>
+              <div>
+                <p className="text-gray-300 font-medium mb-1">Múltiples Métodos de Pago</p>
+                <p className="text-sm leading-relaxed">
+                  Aceptamos pagos desde casi cualquier wallet y red blockchain, incluyendo 
+                  Ethereum, Solana, Base, Optimism y más. Compatible con Phantom, MetaMask, 
+                  Rabby, Brave Wallet, Argent, entre otros.
+                </p>
+              </div>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-blue-500">•</span>
-              Explicar que se puede pagar con cualquier crypto EVM/SVM
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-blue-500">•</span>
-              Crear servidor de automatizar SMS y payments
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-blue-500">•</span>
-              Validación más robusta de número SINPE
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-blue-500">•</span>
-              Agregar el número SINPE al confirmation box
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-blue-500">•</span>
-              Automatizar OTC en el backend
+            <li className="flex items-start gap-3">
+              <span className="text-blue-500 text-lg">•</span>
+              <div>
+                <p className="text-gray-300 font-medium mb-1">Límite de Transacciones</p>
+                <p className="text-sm leading-relaxed">
+                  Durante nuestra fase Alpha de pruebas, hemos establecido un límite diario 
+                  de ₡100,000 por usuario para garantizar la seguridad y estabilidad del servicio.
+                </p>
+              </div>
             </li>
           </ul>
         </div>
