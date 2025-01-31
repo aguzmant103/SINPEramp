@@ -1,6 +1,19 @@
 import adb from 'adbkit';
 import { SMSService } from '../types';
 
+/**
+ * SMS Service implementation using Android Debug Bridge (ADB)
+ * This service uses Android's system services to send SMS messages directly,
+ * without requiring UI interaction.
+ * 
+ * Requirements:
+ * - Android device connected via USB
+ * - USB debugging enabled on the device
+ * - ADB installed on the host machine
+ * 
+ * The service uses the 'service call isms' command which directly interfaces
+ * with Android's telephony services to send SMS messages.
+ */
 export class ADBSMSService implements SMSService {
   private client = adb.createClient();
 
@@ -13,33 +26,22 @@ export class ADBSMSService implements SMSService {
 
       const device = devices[0];
 
-      // Try different methods to send SMS directly
-      const sendCommands = [
-        // Method 1: Using service call isms (direct SMS sending)
-        `service call isms 7 i32 0 s16 "com.android.mms.service" s16 "${phoneNumber}" s16 "null" s16 "${message}" s16 "null" s16 "null"`,
-        'sleep 2',
-        
-        // Method 2: Using content provider
-        `content insert --uri content://sms/sent --bind address:s:${phoneNumber} --bind body:s:"${message}"`,
-        'sleep 2',
-        
-        // Method 3: Using sms manager through am command
-        `am startservice -n com.android.phone/.PhoneInterfaceManager -a android.intent.action.SENDTO -d sms:${phoneNumber} --es sms_body "${message}"`,
-        'sleep 2',
-        
-        // Method 4: Using broadcast with different intent
-        `am broadcast -a android.provider.Telephony.SMS_SEND -n com.android.mms/.transaction.SmsReceiverService --es address "${phoneNumber}" --es body "${message}"`,
-        'sleep 2'
-      ];
-
-      // Execute each command in sequence
-      for (const cmd of sendCommands) {
-        console.log('Executing:', cmd);
-        const result = await this.client.shell(device.id, cmd);
-        console.log('Result:', result);
-        // Wait between commands
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
+      // Send SMS using Android's SMS service directly
+      // This method bypasses UI interaction and works even when the phone is in a different screen
+      // The command parameters are:
+      // - isms: Android's internal SMS service
+      // - 7: Operation code for sending SMS
+      // - i32 0: Message priority
+      // - s16: String parameter type (16-bit)
+      // - Additional parameters: service name, phone number, message, etc.
+      const command = `service call isms 7 i32 0 s16 "com.android.mms.service" s16 "${phoneNumber}" s16 "null" s16 "${message}" s16 "null" s16 "null"`;
+      
+      console.log('Sending SMS via system service...');
+      const result = await this.client.shell(device.id, command);
+      console.log('Service call result:', result);
+      
+      // Wait for the command to complete
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
     } catch (error) {
       console.error('Error sending SMS:', error);
