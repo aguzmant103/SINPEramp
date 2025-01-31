@@ -25,23 +25,23 @@ export class ADBSMSService implements SMSService {
       }
 
       const device = devices[0];
-
-      // Send SMS using Android's SMS service directly
-      // This method bypasses UI interaction and works even when the phone is in a different screen
-      // The command parameters are:
-      // - isms: Android's internal SMS service
-      // - 7: Operation code for sending SMS
-      // - i32 0: Message priority
-      // - s16: String parameter type (16-bit)
-      // - Additional parameters: service name, phone number, message, etc.
-      const command = `service call isms 7 i32 0 s16 "com.android.mms.service" s16 "${phoneNumber}" s16 "null" s16 "${message}" s16 "null" s16 "null"`;
       
-      console.log('Sending SMS via system service...');
+      // Use Android's SMS manager to send the message directly
+      const command = `am broadcast -a android.provider.Telephony.SMS_DELIVER -n com.android.mms/.transaction.SmsReceiverService --es "pdus" "${message}" --es "format" "3gpp" --es "phone" "${phoneNumber}"`;
+      
+      console.log('Sending SMS via SMS manager...');
+      console.log('Command:', command);
+      
       const result = await this.client.shell(device.id, command);
-      console.log('Service call result:', result);
+      console.log('Command result:', result);
+
+      // Alternative method using content provider
+      const contentCommand = `content insert --uri content://sms/sent --bind address:s:${phoneNumber} --bind body:s:"${message}"`;
+      console.log('Trying content provider method...');
+      console.log('Command:', contentCommand);
       
-      // Wait for the command to complete
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const contentResult = await this.client.shell(device.id, contentCommand);
+      console.log('Content provider result:', contentResult);
       
     } catch (error) {
       console.error('Error sending SMS:', error);

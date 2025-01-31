@@ -6,6 +6,19 @@ import { createServer } from 'net';
 const app = express();
 const smsService = new ADBSMSService();
 
+// Add CORS middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
+
 app.use(express.json());
 
 app.post('/webhook/send-sms', async (req: Request, res: Response) => {

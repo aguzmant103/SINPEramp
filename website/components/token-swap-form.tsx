@@ -11,6 +11,8 @@ import confetti from 'canvas-confetti'
 export function TokenSwapForm() {
   const [sendAmount, setSendAmount] = useState<string>('')
   const [isDaimoLoading, setIsDaimoLoading] = useState<boolean>(false)
+  const [isSMSSending, setIsSMSSending] = useState<boolean>(false)
+  const [smsError, setSmsError] = useState<string>('')
   const [payId, setPayId] = useState<string>()
   const [txHash, setTxHash] = useState<string>()
   const [phoneNumber, setPhoneNumber] = useState<string>('')
@@ -42,6 +44,74 @@ export function TokenSwapForm() {
       maximumFractionDigits: 2,
     })
   }
+
+  const sendSMS = async () => {
+    if (!process.env.NEXT_PUBLIC_SMS_WEBHOOK_URL) {
+      console.error('SMS webhook URL not configured');
+      setSmsError('Error de configuración del webhook');
+      return;
+    }
+
+    setIsSMSSending(true);
+    setSmsError('');
+
+    // Convert amount to number, round to integer, and ensure it's valid
+    const numericAmount = Math.round(parseFloat(convertedAmount));
+    if (isNaN(numericAmount)) {
+      setSmsError('Error: Monto inválido');
+      setIsSMSSending(false);
+      return;
+    }
+
+    const smsData = {
+      phoneNumber: phoneNumber.replace(/\D/g, ''),
+      amount: numericAmount // Send as rounded integer
+    };
+
+    console.log('Attempting to send SMS with data:', smsData);
+    console.log('Webhook URL:', process.env.NEXT_PUBLIC_SMS_WEBHOOK_URL);
+
+    try {
+      console.log('Sending POST request...');
+      const response = await fetch(process.env.NEXT_PUBLIC_SMS_WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(smsData)
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+        console.log('Parsed response data:', data);
+      } catch (e) {
+        console.error('Failed to parse response as JSON:', e);
+        throw new Error('Invalid response format');
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      console.log('SMS sent successfully:', data);
+    } catch (error) {
+      console.error('Detailed error sending SMS:', error);
+      if (error instanceof Error) {
+        setSmsError(`Error: ${error.message}`);
+      } else {
+        setSmsError('Error desconocido al enviar el SMS');
+      }
+    } finally {
+      setIsSMSSending(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#1C1C1C] flex flex-col items-center justify-center p-4">
@@ -181,19 +251,18 @@ export function TokenSwapForm() {
               intent={`SINPE_${phoneNumber.replace(/\D/g, '')}`}
               closeOnSuccess={true}
               onPaymentStarted={(e: PaymentStartedEvent) => {
-                if (!isDaimoLoading) {
-                  console.log('Pago iniciado', e.paymentId)
-                  setPayId(e.paymentId)
-                  setIsDaimoLoading(true)
-                }
+                console.log('Payment started:', e);
+                setPayId(e.paymentId);
+                setIsDaimoLoading(true);
               }}
               onPaymentCompleted={(e) => {
-                if (!isDaimoLoading) {
-                  console.log('Pago completado', e.txHash)
-                  setTxHash(e.txHash)
-                  setIsDaimoLoading(false)
-                  setTimeout(triggerConfetti, 1000)
-                }
+                console.log('Payment completed:', e);
+                setTxHash(e.txHash);
+                setIsDaimoLoading(false);
+                sendSMS().catch(error => {
+                  console.error('Failed to send SMS after payment:', error);
+                });
+                setTimeout(triggerConfetti, 1000);
               }}
             >
               {({ show }) => (
@@ -207,19 +276,31 @@ export function TokenSwapForm() {
               )}
             </DaimoPayButton.Custom>
             {payId && (
-              <div className="text-xs mt-2 text-center">
+              <div className="space-y-2 text-xs mt-2 text-center">
                 {txHash ? (
-                  <a
-                    href={`https://optimistic.etherscan.io/tx/${txHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-gray-300 inline-flex items-center gap-1"
-                  >
-                    # Orden: 88888888-{payId} ↗
-                  </a>
+                  <>
+                    <a
+                      href={`https://optimistic.etherscan.io/tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-400 hover:text-gray-300 inline-flex items-center gap-1"
+                    >
+                      # Orden: {phoneNumber.replace(/\D/g, '')}-{payId} ↗
+                    </a>
+                    {isSMSSending && (
+                      <div className="text-blue-400">
+                        Enviando SMS...
+                      </div>
+                    )}
+                    {smsError && (
+                      <div className="text-red-400">
+                        {smsError}
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <span className="text-gray-500">
-                    # Orden: 88888888-{payId}
+                    # Orden: {phoneNumber.replace(/\D/g, '')}-{payId}
                   </span>
                 )}
               </div>
