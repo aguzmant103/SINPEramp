@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useCurrencyConversion } from '@/hooks/useCurrencyConversion'
 import { useDebounce } from '@/hooks/useDebounce'
-import { DollarSign, ArrowDown } from 'lucide-react'
+import { ArrowDown } from 'lucide-react'
 import { DaimoPayButton } from '@daimo/pay'
-import { PaymentStartedEvent } from '@daimo/common'
 import confetti from 'canvas-confetti'
 
 export function TokenSwapForm() {
@@ -26,13 +25,6 @@ export function TokenSwapForm() {
       origin: { y: 0.6 }
     })
   }
-
-  // Move TestConfettiButton to a separate client component
-  const [showConfettiButton, setShowConfettiButton] = useState(false)
-
-  useEffect(() => {
-    setShowConfettiButton(true)
-  }, [])
 
   const formatCurrency = (amount: string, currency: 'USD' | 'CRC') => {
     const num = parseFloat(amount)
@@ -114,36 +106,25 @@ export function TokenSwapForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1C1C1C] flex flex-col items-center justify-center p-4">
-      {showConfettiButton && (
-        <button
-          onClick={triggerConfetti}
-          className="fixed bottom-4 right-4 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl"
-        >
-          🎉
-        </button>
-      )}
+    <div className="flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Main Form Section */}
         <div className="space-y-3">
           {/* Send Token Card (USD) */}
-          <div className="bg-[#2C2C2C] rounded-2xl p-4 border border-gray-800">
+          <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
             <div className="flex justify-between items-center mb-2">
-              <label htmlFor="sendAmount" className="text-gray-400 text-sm">
+              <label htmlFor="sendAmount" className="text-white/80 text-lg">
                 Envías
               </label>
-              <div className="flex items-center gap-2 bg-[#3C3C3C] px-3 py-1.5 rounded-xl">
-                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                  <DollarSign className="w-4 h-4 text-white" />
-                </div>
-                <span className="text-white font-medium">All</span>
+              <div className="flex items-center gap-2 bg-[#2a1457] px-3 py-1 rounded-full text-white/80 text-sm">
+                <span className="text-blue-400">$</span> All
               </div>
             </div>
             <input
               id="sendAmount"
               type="text"
               inputMode="numeric"
-              className="w-full bg-transparent text-4xl text-white placeholder-gray-600 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="w-full bg-transparent text-4xl text-white placeholder-white/30 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               placeholder="0"
               value={sendAmount}
               onChange={(e) => {
@@ -154,63 +135,55 @@ export function TokenSwapForm() {
               }}
               min="0"
             />
-            <div className="text-gray-500 text-sm mt-1">
+            <div className="text-white/40 text-sm mt-1">
               {formatCurrency(sendAmount, 'USD')}
             </div>
           </div>
 
           {/* Arrow Divider */}
           <div className="flex justify-center">
-            <div className="w-8 h-8 bg-[#3C3C3C] rounded-full flex items-center justify-center">
-              <ArrowDown className="w-4 h-4 text-gray-400" />
+            <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
+              <ArrowDown className="w-4 h-4 text-white/60" />
             </div>
           </div>
 
           {/* Receive Token Card (CRC) */}
-          <div className="bg-[#2C2C2C] rounded-2xl p-4 border border-gray-800">
+          <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
             <div className="flex justify-between items-center mb-2">
-              <label className="text-gray-400 text-sm">
+              <label className="text-white/80 text-lg">
                 Recibes
               </label>
-              <div className="flex items-center gap-2 bg-[#3C3C3C] px-3 py-1.5 rounded-xl">
-                <span className="text-white font-medium">CRC</span>
+              <div className="flex items-center gap-2 bg-[#2a1457] px-3 py-1 rounded-full text-white/80 text-sm">
+                CRC
               </div>
             </div>
-            <div className="text-4xl text-white font-medium">
-              {isLoading ? 
-                'Calculando...' : 
-                convertedAmount ? 
-                  Number(convertedAmount).toLocaleString('es-CR', { 
-                    minimumFractionDigits: 2, 
-                    maximumFractionDigits: 2 
-                  }) : 
+            <div className="text-4xl text-white font-bold">
+              {isLoading ?
+                'Calculando...' :
+                convertedAmount ?
+                  Number(convertedAmount).toLocaleString('es-CR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }) :
                   '0.00'
               }
             </div>
-            <div className="flex justify-between text-sm mt-1">
-              <span className="text-gray-500">
-                {formatCurrency(convertedAmount || '0', 'CRC')}
-              </span>
-              <span className="text-gray-400">
-                1 USD = {exchangeRate?.toLocaleString('es-CR', { 
-                  minimumFractionDigits: 2, 
-                  maximumFractionDigits: 2 
-                })} CRC
-              </span>
+            <div className="flex justify-between text-white/40 text-sm mt-1">
+              <span>CRC {formatCurrency(convertedAmount || '0', 'CRC')}</span>
+              <span>1 USD = {exchangeRate?.toLocaleString('es-CR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })} CRC</span>
             </div>
           </div>
 
           {/* Phone Number Card */}
-          <div className="bg-[#2C2C2C] rounded-2xl p-4 border border-gray-800">
-            <div className="flex justify-between items-center mb-2">
-              <label htmlFor="phoneNumber" className="text-gray-400 text-sm">
-                Número SINPE Móvil
-              </label>
-            </div>
+          <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+            <label htmlFor="phoneNumber" className="text-white/80 text-lg mb-2 block">
+              Número SINPE Móvil
+            </label>
             <div className="flex items-center gap-2">
-              <div className="bg-[#3C3C3C] px-3 py-2 rounded-xl text-gray-400 text-lg">
-                (+506)
-              </div>
+              <div className="bg-[#2a1457] px-3 py-2 rounded-lg text-white/60">+506</div>
               <input
                 id="phoneNumber"
                 type="text"
@@ -229,7 +202,7 @@ export function TokenSwapForm() {
                     }
                   }
                 }}
-                className="w-full bg-transparent text-2xl text-white placeholder-gray-600 outline-none"
+                className="w-full bg-transparent text-2xl text-white placeholder-white/30 outline-none"
               />
             </div>
           </div>
@@ -241,7 +214,7 @@ export function TokenSwapForm() {
           )}
 
           {/* DaimoPayButton */}
-          <div className="bg-[#2C2C2C] rounded-2xl p-4 border border-gray-800">
+          <div className="bg-white/0 rounded-2xl p-0 border-0">
             <DaimoPayButton.Custom
               appId="pay-demo"
               toChain={10}
@@ -250,7 +223,7 @@ export function TokenSwapForm() {
               toAddress="0xf446845fAB5367178a1C9e2ffd8D3b7EE678BAfe"
               intent={`SINPE_${phoneNumber.replace(/\D/g, '')}`}
               closeOnSuccess={true}
-              onPaymentStarted={(e: PaymentStartedEvent) => {
+              onPaymentStarted={(e) => {
                 console.log('Payment started:', e);
                 setPayId(e.paymentId);
                 setIsDaimoLoading(true);
@@ -269,7 +242,7 @@ export function TokenSwapForm() {
                 <button
                   onClick={show}
                   disabled={!sendAmount || isLoading || isDaimoLoading || !phoneNumber || phoneNumber.replace(/\D/g, '').length !== 8}
-                  className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:hover:bg-blue-500 text-white font-medium py-3 rounded-xl transition-colors"
+                  className="w-full bg-pink-500 hover:bg-pink-400 text-white text-lg rounded-2xl py-6 mb-6 disabled:opacity-50 transition-colors disabled:hover:bg-blue-50"
                 >
                   Enviar
                 </button>

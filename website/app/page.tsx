@@ -4,19 +4,21 @@ import { TokenSwapForm } from '@/components/token-swap-form'
 
 export default function TokenSwapConverter() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#1C1C1C] px-4">
-      <div className="max-w-2xl text-center space-y-4 px-4 py-16">
-        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-500 via-blue-400 to-blue-500 bg-clip-text text-transparent">
-          Crypto SINPE
-        </h1>
-        <p className="text-gray-400 text-lg md:text-xl font-light">
-          La manera más fácil de convertir crypto a colones
-        </p>
-      </div>
+    <main className="min-h-screen bg-gradient-to-br from-[#2a1457] to-[#1a0a2e] flex flex-col items-center py-10">
+      {/* Logo */}
+      <h1 className="text-5xl font-bold mb-2 flex items-center gap-1 select-none">
+        <span className="text-white">Defi</span>
+        <span className="text-[#a3a1ff]">p</span>
+        <span className="rounded-full bg-gradient-to-tr from-yellow-400 to-pink-500 px-2 text-white flex items-center justify-center">
+          <span role="img" aria-label="smile">😊</span>
+        </span>
+        <span className="text-[#a3a1ff]">p</span>
+      </h1>
+      <p className="text-lg text-white/80 mb-8">La forma mas popular de entrar a DeFi</p>
       <div className="w-full max-w-2xl space-y-8">
         <TokenSwapForm />
       </div>
-    </div>
+    </main>
   )
 }
 

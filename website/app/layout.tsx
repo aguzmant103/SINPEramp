@@ -15,8 +15,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "CryptoSINPE",
-  description: "La manera más fácil de convertir crypto a colones",
+  title: "Defipop",
+  description: "La forma pop de entrar a DeFi",
 };
 
 export default function RootLayout({
